@@ -2,6 +2,8 @@
 const userModel = require('../models/user.model');
 const userService = require('../services/user.service');
 const {validationResult} = require('express-validator');
+const jwt = require('jsonwebtoken');
+const blacklistTokenModel = require('../models/blacklistToken.model');
 
 
 //register
@@ -50,5 +52,20 @@ module.exports.loginUser = async(req, res, next) => {
     //after checking everything we will generate token and also user will be sended as response
 
     const token = user.generateAuthToken();
+    res.cookie('token', token);
     res.status(200).json({token, user});
+}
+
+
+//profile of the user
+module.exports.getUserProfile = async(req, res, next) => {
+    res.status(200).json(req.user);
+}
+
+//logout user
+module.exports.logoutUser = async (req, res, next) => {
+    res.clearCookie('token');
+    const token = req.cookies.token || req.headers.authorization.split(' ')[1];
+    await blacklistTokenModel.create({token});
+    res.status(200).json({message: 'Logged out'});
 }

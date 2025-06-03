@@ -123,3 +123,87 @@ The endpoint expects a JSON body structured as follows:
 // 500 Internal Server Error:
 // For any unexpected server errors, a 500 status code is returned.
 
+// profile//
+## /users/profile Endpoint Documentation
+
+### Description
+
+The `/users/profile` endpoint retrieves the authenticated user's profile information. It relies on prior authentication to provide access, and returns the user's details stored in the system.
+
+### Endpoint Details
+
+- **Method:** GET  
+- **URL:** `/users/profile`
+
+### Authentication Requirements
+
+This endpoint requires the user to be authenticated. The authentication token must be provided either:
+- As a cookie named `token`, or
+- In the `Authorization` header in the format: `Bearer <token>`
+
+The authentication middleware (`authMiddleware.authUser`) validates the token and populates `req.user` with the user's information.
+
+### Request Data
+
+No request body or query parameters are required for this endpoint. All necessary data is obtained through the validated authentication token.
+
+### Response Status Codes
+
+- **200 OK:**  
+  On successful authentication, the endpoint returns a 200 status code with the user's profile information in JSON format.
+  
+  Example response:
+
+  ```json
+  {
+    // User's profile data, e.g.:
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com",
+    // additional user fields if any...
+  }
+  401 Unauthorized:
+If the authentication token is missing or invalid, a 401 status code is returned.
+
+500 Internal Server Error:
+For any unexpected server errors, a 500 status code is returned.
+
+
+
+//logout//
+## /users/logout Endpoint Documentation
+
+### Description
+
+The `/users/logout` endpoint logs out an authenticated user. It clears the authentication cookie, blacklists the current JWT token, and ends the user session.
+
+### Endpoint Details
+
+- **Method:** GET  
+- **URL:** `/users/logout`
+
+### Authentication Requirements
+
+This endpoint requires the user to be authenticated. The JWT token should be provided either as:
+- A cookie named `token`  
+- Or in the `Authorization` header in the format: `Bearer <token>`
+
+### Response Status Codes
+
+- **200 OK:**  
+  On successful logout, the endpoint returns a 200 status code along with a JSON payload confirming the logout.
+
+  Example response:
+
+  ```json
+  {
+    "message": "Logged out"
+  }
+  401 Unauthorized:
+If the user is not authenticated or the token is missing/invalid (handled by the auth middleware), a 401 status code is returned.
+
+500 Internal Server Error:
+In case of any unexpected server errors, a 500 status code will be returned.
+
