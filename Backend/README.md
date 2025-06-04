@@ -215,7 +215,7 @@ In case of any unexpected server errors, a 500 status code will be returned.
 
 #### Description
 
-The `/captain/register` endpoint registers a new captain in the system. This endpoint validates the provided data, creates a new captain record with associated vehicle details, and (typically) returns a JWT token along with the captain’s data.
+The `/captains/register` endpoint registers a new captain in the system. This endpoint validates the provided data, creates a new captain record with associated vehicle details, and (typically) returns a JWT token along with the captain’s data.
 
 #### Endpoint Details
 
