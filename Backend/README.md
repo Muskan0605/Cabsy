@@ -207,3 +207,65 @@ If the user is not authenticated or the token is missing/invalid (handled by the
 500 Internal Server Error:
 In case of any unexpected server errors, a 500 status code will be returned.
 
+
+//captain
+## Captain Routes Documentation
+
+### /captain/register Endpoint
+
+#### Description
+
+The `/captain/register` endpoint registers a new captain in the system. This endpoint validates the provided data, creates a new captain record with associated vehicle details, and (typically) returns a JWT token along with the captain’s data.
+
+#### Endpoint Details
+
+- **Method:** POST  
+- **URL:** `/captain/register`  
+- **Content-Type:** `application/json`
+
+#### Request Body Requirements
+
+The endpoint expects a JSON body with the following structure:
+
+```json
+{
+  "fullname": {
+    "firstname": "Alice",    // required, minimum 3 characters
+    "lastname": "Smith"        // required, should be provided
+  },
+  "email": "alice.smith@example.com",   // required, must be a valid email format
+  "password": "secret123",                // required, minimum 6 characters
+  "vehicle": {
+    "color": "Red",                       // required, minimum 3 characters
+    "plate": "ABC123",                    // required, minimum 3 characters
+    "capacity": 4,                        // required, an integer with a minimum value of 1
+    "vehicleType": "car"                  // required, must be one of: 'car', 'motorcycle', 'auto'
+  }
+}
+// Response Status Codes
+// 201 Created:
+// When a captain is successfully registered, the endpoint returns a 201 status code along with a JSON payload. The payload typically includes a JWT token and the newly created captain’s data.
+
+- **400 Bad Request:**  
+If any validation errors occur (for example, if required fields are missing or do not meet the specified criteria), the endpoint returns a 400 status code with a JSON payload describing the errors.
+
+Example error response:
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid Email",
+      "param": "email",
+      "location": "body"
+    },
+    {
+      "msg": "First name must be atleast 3 characters long",
+      "param": "fullname.firstname",
+      "location": "body"
+    }
+    // other validation errors...
+  ]
+}
+// 500 Internal Server Error:
+// In case of any unexpected issues on the server, a 500 status code is returned.
