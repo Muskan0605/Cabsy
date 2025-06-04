@@ -211,61 +211,162 @@ In case of any unexpected server errors, a 500 status code will be returned.
 //captain
 ## Captain Routes Documentation
 
-### /captain/register Endpoint
+### 1. /captain/register Endpoint
 
 #### Description
-
-The `/captains/register` endpoint registers a new captain in the system. This endpoint validates the provided data, creates a new captain record with associated vehicle details, and (typically) returns a JWT token along with the captain’s data.
+Registers a new captain with associated vehicle details. Validations ensure that all required fields meet the constraints. On success, a JWT token and the created captain object are returned.
 
 #### Endpoint Details
-
 - **Method:** POST  
 - **URL:** `/captain/register`  
 - **Content-Type:** `application/json`
 
-#### Request Body Requirements
-
-The endpoint expects a JSON body with the following structure:
-
+#### Request Body Example
 ```json
 {
-  "fullname": {
-    "firstname": "Alice",    // required, minimum 3 characters
-    "lastname": "Smith"        // required, should be provided
-  },
-  "email": "alice.smith@example.com",   // required, must be a valid email format
-  "password": "secret123",                // required, minimum 6 characters
-  "vehicle": {
-    "color": "Red",                       // required, minimum 3 characters
-    "plate": "ABC123",                    // required, minimum 3 characters
-    "capacity": 4,                        // required, an integer with a minimum value of 1
-    "vehicleType": "car"                  // required, must be one of: 'car', 'motorcycle', 'auto'
-  }
-}
-// Response Status Codes
-// 201 Created:
-// When a captain is successfully registered, the endpoint returns a 201 status code along with a JSON payload. The payload typically includes a JWT token and the newly created captain’s data.
-
-- **400 Bad Request:**  
-If any validation errors occur (for example, if required fields are missing or do not meet the specified criteria), the endpoint returns a 400 status code with a JSON payload describing the errors.
-
-Example error response:
-
-```json
-{
-  "errors": [
-    {
-      "msg": "Invalid Email",
-      "param": "email",
-      "location": "body"
+    "fullname": {
+        "firstname": "Alice", // required, minimum 3 characters
+        "lastname": "Smith"     // required
     },
-    {
-      "msg": "First name must be atleast 3 characters long",
-      "param": "fullname.firstname",
-      "location": "body"
+    "email": "alice.smith@example.com", // required, must be a valid email format
+    "password": "secret123",            // required, minimum 6 characters
+    "vehicle": {
+        "color": "Red",                  // required, minimum 3 characters
+        "plate": "ABC123",               // required, minimum 3 characters
+        "capacity": 4,                   // required, must be an integer ≥ 1
+        "vehicleType": "car"             // required, one of: "car", "motorcycle", "auto"
     }
-    // other validation errors...
-  ]
 }
-// 500 Internal Server Error:
-// In case of any unexpected issues on the server, a 500 status code is returned.
+// Successful Response (201 Created)
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // JWT token for authentication
+    "captain": {
+        "fullname": {
+            "firstname": "Alice",
+            "lastname": "Smith"
+        },
+        "email": "alice.smith@example.com",
+        "vehicle": {
+            "color": "Red",
+            "plate": "ABC123",
+            "capacity": 4,
+            "vehicleType": "car"
+        }
+        // any additional captain fields (except sensitive ones)
+    }
+}
+// Error Response (400 Bad Request)
+{
+    "errors": [
+        {
+            "msg": "Invalid Email",
+            "param": "email",
+            "location": "body"
+        },
+        {
+            "msg": "First name must be atleast 3 characters long",
+            "param": "fullname.firstname",
+            "location": "body"
+        }
+        // ...other validation errors
+    ]
+}
+2. /captain/login Endpoint
+Description
+Authenticates an existing captain based on email and password. On successful authentication, a JWT token and captain details are returned.
+
+Endpoint Details
+Method: POST
+URL: /captain/login
+Content-Type: application/json
+eg-
+{
+    "email": "alice.smith@example.com", // required, must be a valid email format
+    "password": "secret123"             // required, minimum 6 characters
+}
+// Successful Response (200 OK)
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // JWT token
+    "captain": {
+        "fullname": {
+            "firstname": "Alice",
+            "lastname": "Smith"
+        },
+        "email": "alice.smith@example.com",
+        "vehicle": {
+            "color": "Red",
+            "plate": "ABC123",
+            "capacity": 4,
+            "vehicleType": "car"
+        }
+        // additional captain details as applicable
+    }
+}
+// error responses
+// 400 Bad Request: When input validations fail.
+{
+    "errors": [
+        {
+            "msg": "Invalid Email",
+            "param": "email",
+            "location": "body"
+        },
+        {
+            "msg": "Password should be atleast 6 characters long",
+            "param": "password",
+            "location": "body"
+        }
+    ]
+}
+// 401 Unauthorized: When the email does not exist or the password is incorrect.
+{
+    "message": "Invalid email or password"
+}
+3. /captain/profile Endpoint
+Description
+Retrieves the authenticated captain’s profile data. This endpoint requires a valid authentication token.
+Endpoint Details
+Method: GET
+URL: /captain/profile
+Authentication Requirements
+A valid JWT token must be provided either as a cookie (named token) or in the Authorization header as Bearer <token>.
+// Successful Response (200 OK)
+{
+    "captain": {
+        "fullname": {
+            "firstname": "Alice",
+            "lastname": "Smith"
+        },
+        "email": "alice.smith@example.com",
+        "vehicle": {
+            "color": "Red",
+            "plate": "ABC123",
+            "capacity": 4,
+            "vehicleType": "car"
+        }
+        // any additional profile details
+    }
+}
+// 401 Unauthorized: When authentication fails.
+{
+    "message": "Unauthorized"
+}
+4. /captain/logout Endpoint
+Description
+Logs out the authenticated captain. The endpoint clears the authentication cookie and blacklists the current JWT token.
+
+Endpoint Details
+Method: GET
+URL: /captain/logout
+Authentication Requirements
+A valid JWT token must be provided (as a cookie or via the Authorization header).
+// Successful Response (200 OK)
+{
+    "message": "Logout successfully"
+}
+// Error Response
+// 401 Unauthorized: When authentication fails (missing or invalid token).
+{
+    "message": "Unauthorized"
+}
+// 500 Internal Server Error: For any unexpected server errors.
