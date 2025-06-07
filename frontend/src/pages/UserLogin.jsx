@@ -1,23 +1,45 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import logo from '../assets/logo.png'
 import { Link } from 'react-router-dom'
+import { UserDataContext } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const UserLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [userData, setUserData] = useState({});
 
-    const submitHandler = (e) => {
-        //e does not show default behavior so write this
-        e.preventDefault();
-        setUserData({
-            email:email,
-            password:password
-        })
-        setEmail('');
-        setPassword('')
+    const {user, setUser} = useContext(UserDataContext)
+    const navigate = useNavigate()
+
+  
+  const submitHandler = async (e) => {
+  e.preventDefault();
+
+  const userData = {
+    email: email,
+    password: password,
+  };
+
+  try {
+    const BASE_URL = process.env.REACT_APP_BASE_URL;
+    const response = await axios.post(`${BASE_URL}/users/login`, userData);
+
+    if (response.status === 200) {
+      const data = response.data;
+      setUser(data.user);
+      localStorage.setItem('token', data.token)
+      navigate('/home');
     }
-    // console.log(userData);
+  } catch (error) {
+    console.error("Login failed:", error.response?.data?.message || error.message);
+  }
+
+  setEmail('');
+  setPassword('');
+};
+
 
   return (
     <div className='p-7 bg-stone-700 flex flex-col justify-between h-screen'>

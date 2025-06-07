@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
+import axios from 'axios';
+import { UserDataContext } from '../context/UserContext';
 
 const UserSignup = () => {
     const [email, setEmail] = useState('');
@@ -9,17 +11,29 @@ const UserSignup = () => {
     const [lastName, setLastName] = useState('');
     const [userData, setUserData] = useState({});
 
-    const submitHandler = (e) => {
+    const navigate = useNavigate()
+
+    const {user, setUser} = React.useContext(UserDataContext)
+
+    const submitHandler = async (e) => {
         //e does not show default behavior so write this
         e.preventDefault();
-        setUserData({
-            fullName: {
-                firstName: firstName,
-                lastName: lastName
+        const newUser = {
+            fullname: {
+                firstname: firstName,
+                lastname: lastName
             },
             email: email,
             password: password
-        })
+        }
+        const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/users/register`, newUser)
+        if(response.status === 201){
+            const data = response.data
+            setUser(data.user)
+            localStorage.setItem('token', data.token)
+            navigate('/home')
+        }
+
         // console.log(userData);
 
         setFirstName('');
@@ -78,12 +92,12 @@ const UserSignup = () => {
             />
 
             <button className='bg-stone-400 text-center font-semibold mb-2 rounded px-4 py-2 w-full text-lg placeholder:text-base text-black'>
-            Login
+            Create Account
             </button>
 
         </form>
 
-        <p className='text-white text-center'>Already have a account?? <Link to='/login' className='text-cyan-800'>Login here</Link> </p>
+        <p className='text-white text-center'>Already have a account?<Link to='/login' className='text-cyan-800'>Login here</Link> </p>
 
        </div>
 
